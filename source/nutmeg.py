@@ -61,3 +61,51 @@ class Nutmeg(torch.nn.Module):
         result = self.model(data)
         return result['y_graph_scalars']
 
+class Nutmeg_Detach_Edge_Construct(Nutmeg):
+    def forward(self, positions, types, node_attrs, edge_index, boxvectors: Optional[torch.Tensor] = None,
+     edge_attrs: Optional[torch.Tensor] = None, cell_shift_vector: Optional[torch.Tensor] = None,):
+        """Execute the model and compute the potential energy.
+        
+        Parameters
+        ----------
+        positions: torch.Tensor
+            Tensor of shape (N, 3) containing the atom positions in nm
+        types: torch.Tensor
+            Tensor of length N containing the atom type index of each atom
+        node_attrs: torch.Tensor
+            Tensor of length (N, 18) containing the input node features for
+            each atom.  The first 17 elements are the one-hot encoded atom
+            type, and the final element is the partial charge.
+        boxvectors: torch.Tensor
+            Tensor of shape (3, 3) containing the periodic box vectors.  If
+            this is None, periodic boundary conditions are not used.
+        
+        Returns
+        -------
+        the potential energy in kJ/mol
+        """
+        positions = positions.to(torch.float32)
+        if boxvectors is None:
+            cell = torch.eye(3, dtype=torch.float32)
+            pbc = (False, False, False)
+        else:
+            cell = boxvectors.to(torch.float32)
+            pbc = (True, True, True)
+        if  cell_shift_vector is None:
+            cell_shift_vector = torch.zeros((edge_index.shape[1],3), dtype=torch.float32, device=positions.device)
+        data = {
+            'coordinates': positions,
+            'edge_index': edge_index,
+            'cell_shift_vector': cell_shift_vector,
+            'raw_atomic_numbers': types,
+            'node_attrs': node_attrs,
+            'num_nodes': torch.tensor(positions.shape[0], device=positions.device),
+            'batch': torch.zeros(positions.shape[0], dtype=torch.long, device=positions.device),
+            'num_graphs': torch.tensor(1, device=positions.device)
+        }
+        data['pbc'] = torch.tensor(pbc, device=positions.device)
+        data['cell'] = cell.to(positions.device)
+        if edge_attrs is not None:
+            data['edge_attrs'] = edge_attrs
+        result = self.model(data)
+        return result['y_graph_scalars']
