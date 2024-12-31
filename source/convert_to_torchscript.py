@@ -24,6 +24,6 @@ def convert_detach_edge_compute(model_path, output_path):
                                                            model.config['datamodule']['self_interaction']))
     module.save(output_path)
 
-convert_model('nutmeg-small', 'nutmeg-small-detach-edge.pt')
-convert_model('nutmeg-medium', 'nutmeg-medium-detach-edge.pt')
-convert_model('nutmeg-large', 'nutmeg-large-detach-edge.pt')
+convert_detach_edge_compute('nutmeg-small', 'nutmeg-small-detach-edge.pt')
+convert_detach_edge_compute('nutmeg-medium', 'nutmeg-medium-detach-edge.pt')
+convert_detach_edge_compute('nutmeg-large', 'nutmeg-large-detach-edge.pt')
