@@ -63,7 +63,7 @@ class Nutmeg(torch.nn.Module):
 
 class Nutmeg_Detach_Edge_Construct(Nutmeg):
     def forward(self, positions, types, node_attrs, edge_index, boxvectors: Optional[torch.Tensor] = None,
-     edge_attrs: Optional[torch.Tensor] = None, cell_shift_vector: Optional[torch.Tensor] = None,):
+     edge_attrs: Optional[torch.Tensor] = None, cell_shift_vector: Optional[torch.Tensor] = None, batch: Optional[torch.Tensor] = None):
         """Execute the model and compute the potential energy.
         
         Parameters
@@ -93,6 +93,8 @@ class Nutmeg_Detach_Edge_Construct(Nutmeg):
             pbc = (True, True, True)
         if  cell_shift_vector is None:
             cell_shift_vector = torch.zeros((edge_index.shape[1],3), dtype=torch.float32, device=positions.device)
+        if batch is None:
+            batch = torch.zeros((positions.shape[0],), dtype=torch.long, device=positions.device)
         data = {
             'coordinates': positions,
             'edge_index': edge_index,
@@ -100,7 +102,7 @@ class Nutmeg_Detach_Edge_Construct(Nutmeg):
             'raw_atomic_numbers': types,
             'node_attrs': node_attrs,
             'num_nodes': torch.tensor(positions.shape[0], device=positions.device),
-            'batch': torch.zeros(positions.shape[0], dtype=torch.long, device=positions.device),
+            'batch': batch,
             'num_graphs': torch.tensor(1, device=positions.device)
         }
         data['pbc'] = torch.tensor(pbc, device=positions.device)
