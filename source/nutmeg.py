@@ -103,7 +103,7 @@ class Nutmeg_Detach_Edge_Construct(Nutmeg):
             'node_attrs': node_attrs,
             'num_nodes': torch.tensor(positions.shape[0], device=positions.device),
             'batch': batch,
-            'num_graphs': torch.tensor(1, device=positions.device)
+            'num_graphs': torch.tensor(batch.max() + 1, device=positions.device)
         }
         data['pbc'] = torch.tensor(pbc, device=positions.device)
         data['cell'] = cell.to(positions.device)
